@@ -1,0 +1,132 @@
+#!/bin/bash
+args=( "$@" )
+cmds=( list spdf s qgc egl gc m2 gdup bbcl egl)
+echo
+echo
+
+case $1 in
+    list)
+        echo Commands:
+        echo =========
+        for i in ${cmds[@]}; do
+            echo $i
+        done
+        echo
+        echo
+        exit
+        ;;
+
+
+
+    spdf)
+        echo "Ghostscript PDF compression"
+        if [ $# -lt 3 ];
+            then echo "Not enough arguments"
+            exit
+        fi
+        pdf_shrink.sh $2 $3
+        echo done
+        exit
+        ;;
+
+
+
+    s)
+        echo "Sublime text editor"
+        n=$#
+        for i in `seq 1 ${n}`; do
+            subl ${args[$i]}
+        done
+        exit
+        ;;
+
+
+
+    qgc)
+        echo "QGroundControl"
+        echo
+        echo
+        $HOME/.local/share/qgroundcontrol/QGroundControl &
+        exit
+        ;;
+
+
+    gc)
+        echo "Geppetto Client"
+        echo
+        echo
+        PWD=$HOME/git/geppetto-client
+        $PWD/geppetto-client --update
+        exit
+        ;;
+
+
+
+    m2)
+        echo "Make 2-part SD card"
+        echo
+        echo
+        sudo umount ${2}1
+        sudo umount ${2}2
+        sudo -H $HOME/.local/bin/mk2partsd $2
+        ;;
+
+    gdup)
+        echo "gdrive upload $2"
+        if [ $3 = "p" ];
+            then echo "Public";
+            parent=0B8lrAesohhgncEhQWFFwS1dVZFk
+        else
+            parent=0B8lrAesohhgnYnp4ZDNqWXRGVE0
+        fi
+        tag=$(gdrive list --query "'$parent' in parents" | grep $2 2>$1 | cut -d" " -f1)
+        if [ ${#tag} -ge 1 ];
+        then 
+            echo "this is ${tag[0]}"
+            gdrive update $tag $2
+        else
+            gdrive upload -p $parent $2
+        fi
+        exit
+        exit
+        ;;
+
+
+
+    bbcl)
+        echo "Gumstix BitBucket clone $2"
+        echo
+        echo
+        repo=$2.git
+        cd /home/$USER/git
+        git clone git@bitbucket.org:gumstix/$repo
+        exit
+        ;;
+
+    egl)
+        echo "Eagle"
+        if [[ $2 == BRD* ]] || [[ $2 == brd* ]]
+            then
+            echo "Opening Geppetto board $2"
+            echo
+            echo
+            eagle $HOME/.geppetto/repos/eagle-src/boards/900000000${2:3}/900000000${2:3}
+        elif [[ $2 == MOD* ]] || [[ $2 == mod* ]]
+            then
+            echo "Opening Geppetto module $2"
+            echo
+            echo
+            eagle $HOME/.geppetto/repos/eagle-src/modules/${2^^}/${2^^}
+        else
+            eagle $2
+        fi
+    exit
+    ;;        
+
+    *)
+        echo "Usage:  $ quick [cmd] <arg1, arg2...>" 
+        qk list
+        exit
+        ;;
+esac
+
