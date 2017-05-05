@@ -1,6 +1,7 @@
 #!/bin/bash
 args=( "$@" )
 cmds=( list spdf s qgc egl gc m2 gdup bbcl egl)
+g_egl_dir=$HOME/git/geppetto-client/programs/eagle_cad
 echo
 echo
 
@@ -110,7 +111,7 @@ case $1 in
             echo "Opening Geppetto board $2"
             echo
             echo
-            eagle $HOME/.geppetto/repos/eagle-src/boards/900000000${2:3}/900000000${2:3}
+            ${g_egl_dir}/bin/eagle $HOME/.geppetto/repos/eagle-src/boards/900000000${2:3}/900000000${2:3}
         elif [[ $2 == MOD* ]] || [[ $2 == mod* ]]
             then
             echo "Opening Geppetto module $2"
