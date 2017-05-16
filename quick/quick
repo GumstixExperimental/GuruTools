@@ -1,7 +1,9 @@
 #!/bin/bash
 args=( "$@" )
-cmds=( list spdf s qgc egl gc m2 gdup bbcl egl)
-g_egl_dir=$HOME/git/geppetto-client/programs/eagle_cad
+cmds=( list spdf s qgc egl gc m2 gdup bbcl egl )
+g_egl_dir="$HOME/.local/"
+boot_sd_list=(MLO zImage u-boot.img)
+rootfs_sd_list=("gumstix-console-image-*.tar.bz2" "modules-*.tgz")
 echo
 echo
 
@@ -121,11 +123,11 @@ case $1 in
         else
             eagle $2
         fi
-    exit
-    ;;        
-
+        exit
+        ;;        
+    
     *)
-        echo "Usage:  $ quick [cmd] <arg1, arg2...>" 
+        echo "Usage:  \$ $0 [cmd] <arg1, arg2...>" 
         qk list
         exit
         ;;
