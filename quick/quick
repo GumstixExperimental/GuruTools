@@ -1,6 +1,6 @@
 #!/bin/bash
 args=( "$@" )
-cmds=( list spdf s qgc egl gc m2 gdup bbcl egl )
+cmds=( list spdf s qgc egl gc m2 gdup bbcl egl d)
 g_egl_dir="$HOME/.local/"
 boot_sd_list=(MLO zImage u-boot.img)
 rootfs_sd_list=("gumstix-console-image-*.tar.bz2" "modules-*.tgz")
@@ -27,7 +27,7 @@ case $1 in
             then echo "Not enough arguments"
             exit
         fi
-        pdf_shrink.sh $2 $3
+        gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dBATCH -sOutputFile=$3 $2
         echo done
         exit
         ;;
@@ -124,8 +124,18 @@ case $1 in
             eagle $2
         fi
         exit
-        ;;        
-    
+        ;;
+    d)
+    	echo "Meld Diff"      
+    	echo
+    	echo
+    	if [$# -lt 3]; then
+    		echo "Not enough arguments"
+    		exit
+    	fi
+    	meld $2 $3
+    	exit
+    	;;
     *)
         echo "Usage:  \$ $0 [cmd] <arg1, arg2...>" 
         qk list
