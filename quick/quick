@@ -1,6 +1,6 @@
 #!/bin/bash
 args=( "$@" )
-cmds=( list spdf s qgc egl gc m2 gdup bbcl egl d)
+cmds=( list spdf s qgc egl gc m2 gdup bbcl egl d wa dd sc)
 g_egl_dir="$HOME/.local/"
 boot_sd_list=(MLO zImage u-boot.img)
 rootfs_sd_list=("gumstix-console-image-*.tar.bz2" "modules-*.tgz")
@@ -74,6 +74,15 @@ case $1 in
         sudo -H $HOME/.local/bin/mk2partsd $2
         ;;
 
+    mn)
+        echo "Make nfs-ready SD card"
+        echo
+        echo
+        sudo umount ${2}1
+        sudo umount ${2}2
+        sudo -H $HOME/.local/bin/mknfssd $2
+        ;;
+
     gdup)
         echo "gdrive upload $2"
         if [ $3 = "p" ];
@@ -108,12 +117,25 @@ case $1 in
 
     egl)
         echo "Eagle"
-        if [[ $2 == BRD* ]] || [[ $2 == brd* ]]
-            then
+        if [[ $2 == BRD* ]] || [[ $2 == brd* ]];
+        then
+            end=${2:3}
+            echo $end
+            len="$((12-${#end}))"
+            echo $len
+            name="9"
+            for (( i=1; i<len; i++));
+            do
+                name="$name""0"
+                echo $name
+                echo $run
+            done
+            name="$name$end"
+            echo $name
             echo "Opening Geppetto board $2"
             echo
             echo
-            ${g_egl_dir}/bin/eagle $HOME/.geppetto/repos/eagle-src/boards/900000000${2:3}/900000000${2:3}
+            ${g_egl_dir}/bin/eagle $HOME/.geppetto/repos/eagle-src/boards/$name/$name.brd
         elif [[ $2 == MOD* ]] || [[ $2 == mod* ]]
             then
             echo "Opening Geppetto module $2"
@@ -129,13 +151,52 @@ case $1 in
     	echo "Meld Diff"      
     	echo
     	echo
-    	if [$# -lt 3]; then
+    	if [ $# -lt 3 ]; then
     		echo "Not enough arguments"
     		exit
     	fi
     	meld $2 $3
     	exit
     	;;
+    wa)
+        echo "Wacom Config"
+        echo
+        echo
+        xsetwacom --set "Wacom Bamboo 2FG 4x5 Pad pad" Button 8 "key +shift = -shift" 
+        xsetwacom --set "Wacom Bamboo 2FG 4x5 Pad pad" Button 9 "key -"
+        xsetwacom --set "Wacom Bamboo 2FG 4x5 Pad pad" Button 1 "key +ctrl z -ctrl"
+        xsetwacom --set "Wacom Bamboo 2FG 4x5 Pad pad" Button 3 "key +shift ctrl j -shift"
+        xsetwacom --set "Wacom Bamboo 2FG 4x5 Finger touch" Touch off
+        xsetwacom --set "Wacom Bamboo 2FG 4x5 Pen stylus" MapToOutput 1920x1080+1920+0
+        xsetwacom --set "Wacom Bamboo 2FG 4x5 Pen eraser" MapToOutput 1920x1080+1920+0
+        xsetwacom --set "Wacom Bamboo 2FG 4x5 Pen stylus" Rotate half
+        xsetwacom --set "Wacom Bamboo 2FG 4x5 Pen eraser" Rotate half
+        exit
+        ;;
+    dd)
+        if [ $# -lt 3 ]; then
+            echo "not enough parameters"
+            exit
+        fi
+        size=$(ls -l --b=M  $2 | cut -d " " -f5)
+        echo $size
+        echo "DD $2 to $3.  Size = $size"
+        sudo sh -c "dd if=$2 bs=4M | pv -s $size | dd of=$3 bs=4M iflag=fullblock"
+        exit
+        ;;
+    sc)
+        if [ $# -lt 2 ]; then
+            echo "not enough parameters"
+        fi
+        if [ $# -gt 2 ]; then
+            baud=$3
+        else
+            baud=115200
+        fi
+        echo "Connecting to /dev/ttyUSB$2 at $baud bps"
+        screen /dev/ttyUSB$2 $baud
+        exit
+        ;;
     *)
         echo "Usage:  \$ $0 [cmd] <arg1, arg2...>" 
         qk list
